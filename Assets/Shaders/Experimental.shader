@@ -3,7 +3,6 @@ Shader "Custom/ExperimentalShader"
     Properties
     {
         [NoScaleOffset]
-
         
         _MainTex ("Texture", 2D) = "white" {}
         
@@ -26,8 +25,6 @@ Shader "Custom/ExperimentalShader"
         Pass
         {
             CGPROGRAM
-// Upgrade NOTE: excluded shader from DX11, OpenGL ES 2.0 because it uses unsized arrays
-#pragma exclude_renderers d3d11 gles
             #pragma vertex vert
             #pragma fragment frag
 
@@ -111,7 +108,6 @@ Shader "Custom/ExperimentalShader"
     
                     dist = sin(dist * 8.0 + _Time*_Propogation_Speed)/8.0;
                     dist = abs(dist);
-    
                     dist = pow(.01 / dist, 2);
     
                     finalColor += color * dist;
