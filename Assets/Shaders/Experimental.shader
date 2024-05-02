@@ -32,10 +32,10 @@ Shader "Custom/ExperimentalShader"
 
             int _Iterations;
 
-            fixed3 _DC_Color;
-            fixed3 _Amplitude_Color;
-            fixed3 _Frequency_Color;
-            fixed3 _Phase_Color;
+            float3 _DC_Color;
+            float3 _Amplitude_Color;
+            float3 _Frequency_Color;
+            float3 _Phase_Color;
 
             float _Color_Speed;
             float _Propogation_Speed;
@@ -56,47 +56,45 @@ Shader "Custom/ExperimentalShader"
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
+
+                v.uv = ((v.uv - .5)  * _ScreenParams.xy) / _ScreenParams.y; // normalize the uv
+                o.uv = v.uv * 2;
+
                 o.uv = v.uv;
                 return o;
             }
 
             sampler2D _MainTex;
 
-            fixed3 palette(float t)
+            float3 palette(float t)
             {
-                fixed3 dc_offset = _DC_Color.rgb;
-                fixed3 amplitude = _Amplitude_Color.rgb;
-                fixed3 frequency = _Frequency_Color.rgb;
-                fixed3 phase = _Phase_Color.rgb;
+                float3 dc_offset = _DC_Color.rgb;
+                float3 amplitude = _Amplitude_Color.rgb;
+                float3 frequency = _Frequency_Color.rgb;
+                float3 phase = _Phase_Color.rgb;
 
                 return dc_offset + amplitude * cos(6.28318*(frequency + phase  + t));
             }
 
-            fixed2 rotate(fixed2 uv, float angle)
+            float2 rotate(float2 uv, float angle)
             {
-                return fixed2(uv.x * cos(angle) - uv.y * sin(angle), uv.x * sin(angle) + uv.y * cos(angle));
+                return float2(uv.x * cos(angle) - uv.y * sin(angle), uv.x * sin(angle) + uv.y * cos(angle));
             }
 
-            fixed2 zoom(fixed2 uv, float zoom)
+            float2 zoom(float2 uv, float zoom)
             {
                 return zoom * sin(uv.xy);
             }
 
-            fixed4 frag (v2f IN) : SV_Target
+            float4 frag (v2f IN) : SV_Target
             {
-                fixed2 fragCoord = IN.uv.xy;
-                
-                IN.uv -= .5;
-                IN.uv *= 2;
-                IN.uv.x = (IN.uv.x * _ScreenParams.xy) / _ScreenParams.y;
-
-                fixed2 uv0 = IN.uv;
+                float2 uv0 = IN.uv;
 
                 IN.uv.xy = rotate(IN.uv, _Time);
                 
                 IN.uv.xy = zoom(IN.uv, sin(_Time * 1.5));
 
-                fixed3 finalColor = fixed3(0,0,0);
+                float3 finalColor = float3(0,0,0);
 
                 for(float i = 0; i < _Iterations; i++) {
 
@@ -104,7 +102,7 @@ Shader "Custom/ExperimentalShader"
     
                     float dist = length(IN.uv) * exp(-length(uv0));
 
-                    fixed3 color = palette(length(uv0) + i*.4 + _Time*_Color_Speed);
+                    float3 color = palette(length(uv0) + i*.4 + _Time*_Color_Speed);
     
                     dist = sin(dist * 8.0 + _Time*_Propogation_Speed)/8.0;
                     dist = abs(dist);
@@ -113,7 +111,7 @@ Shader "Custom/ExperimentalShader"
                     finalColor += color * dist;
                 }
 
-                return fixed4(finalColor, 1);;
+                return float4(finalColor, 1);;
             }
             ENDCG
         }
